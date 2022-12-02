@@ -27,6 +27,7 @@ def mountDrive () :
     isExist = os.path.exists (google_drive)
     if not isExist :
         drive.mount('/content/drive/')
+        print ('Google Driver mounted.')
     
     return True
 ###
@@ -41,8 +42,6 @@ class WhisperAM :
         isExist = os.path.exists (self.out_dir)
         if not isExist :
             os.makedirs (self.out_dir, exist_ok=False)
-        
-        #return True
     ###
 
 
@@ -108,12 +107,6 @@ class WhisperAM :
         with open (srt_file, "w", encoding="utf-8") as wf:
             wf.write (text2)
             os.remove (srt_file_tmp)
-
-
-        # save text
-        #tmp_file = output_dir + name + '.org.txt'
-        #with open (tmp_file, 'w', encoding="utf-8") as wf :
-            #write_txt (segments, file=wf)
             
         # post processing : apply macros
         text = self.getText (segments)
@@ -193,41 +186,43 @@ class WhisperAM :
         files2 = glob.glob (self.data_dir + '/*.m4a')
 
         self.input_data = files1 + files2
-        print (self.input_data)
         return self.input_data
-
+    ###
+    
 
     # main program
     def run (self) :
         self.loadModel ()
         input_data = self.getFiles ()
         
-        for data in input_data :
-            source_file_name = data
+        for source_file_name in input_data :
+            print (source_file_name)
             target_name = '.'.join (source_file_name.split ('/') [-1].split ('.') [:-1])
 
             # trascribing
-            print (target_name)
             result = self.transcribe (target_name, self.data_dir)
             result = self.saveResult (target_name, self.data_dir, result)
             text = result ['text']
             print (target_name, '\n', text [:50], '...', text [-50:])
         ### for
     ### main
-
-
 ### class
 
 
 def test () :
     #@title run Whisper
-    #%%time
+
+    data_dir = 'data/'
+
+    ds = mountDrive ()
+    google_drive = '/content/drive/MyDrive/' if ds else './'
+
+    data_path   = google_drive + data_dir
+    print (data_path)
+
+    model_name   = 'tiny.en'
     
-    google_drive = '/content/drive/MyDrive/'
-    data_dir   = google_drive + 'data/'   #@param {type:"string"}
-    model_name = 'tiny.en'
-    
-    am = WhisperAM (model_name, data_dir)
+    am = WhisperAM (model_name, data_path)
     am.checkCuda ()
 
     print ('Start :', time.strftime('%X %x %Z'))
