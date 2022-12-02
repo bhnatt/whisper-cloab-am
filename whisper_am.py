@@ -2,6 +2,7 @@
 
 from docx import Document
 from docx.shared import Pt
+import ffmpeg
 import glob
 import numpy as np
 import os
@@ -52,18 +53,14 @@ class WhisperAM :
 
         torch.cuda.is_available ()
         self.DEVICE = "cuda" if torch.cuda.is_available () else "cpu"
-        print (self.DEVICE)
+            
+        return self.DEVICE
+    ###
 
 
     #@title Whisper model selection : medium.en (default)
     def loadModel (self) :
-        #model_name = 'tiny.en' #@param ["medium.en", "large", "tiny.en"]
         self.model = whisper.load_model (self.model_name, device=self.DEVICE)
-
-        #model = whisper.load_model ('tiny.en', device=DEVICE)
-        #model = whisper.load_model ('small.en', device=DEVICE)
-        #model = whisper.load_model ('medium.en', device=DEVICE)
-        #model = whisper.load_model ('large', device=DEVICE)
     ###
 
 
@@ -80,9 +77,7 @@ class WhisperAM :
     transcribe_options = dict (task="transcribe", **options)
 
     #@title transcribe function definition
-    def transcribe (self, name, output_dir) :
-        mp3_file = output_dir + name + '.mp3'
-
+    def transcribe (self, mp3_file) :
         self.result = self.model.transcribe (mp3_file, **self.transcribe_options)
         return self.result
     ###
@@ -180,30 +175,47 @@ class WhisperAM :
     ###        
 
 
-    #get input audio data list in 'data' folder
-    def getFiles (self) :
-        files1 = glob.glob (self.data_dir + '/*.mp3')
-        files2 = glob.glob (self.data_dir + '/*.m4a')
+    # get input audio data list in 'data' folder
+    @staticmethod
+    def getFiles (data_dir) :
+        files1 = glob.glob (data_dir + '/*.mp3')
+        files2 = glob.glob (data_dir + '/*.m4a')
 
-        self.input_data = files1 + files2
-        return self.input_data
+        input_data = files1 + files2
+        return input_data
+    ###
+    
+    
+    # down sample input audio to 16k
+    # https://www.programcreek.com/python/example/117479/ffmpeg.output
+    @staticmethod
+    def downSample (in_name, out_name) :
+        audio  = ffmpeg.input  (in_name).audio
+        stream = ffmpeg.output (audio, out_name, **{'ar': '16000', 'acodec': 'mp3'}).overwrite_output ()
+        out    = ffmpeg.run    (stream, capture_stdout=True, capture_stderr=True)
     ###
     
 
     # main program
     def run (self) :
         self.loadModel ()
-        input_data = self.getFiles ()
+        input_data = self.getFiles (self.data_dir)
         
         for source_file_name in input_data :
             print (source_file_name)
+
             target_name = '.'.join (source_file_name.split ('/') [-1].split ('.') [:-1])
+            mp3_file_16k = self.data_dir + '/' + target_name + '-16k.mp3'
+
+            self.downSample (source_file_name, mp3_file_16k)
 
             # trascribing
-            result = self.transcribe (target_name, self.data_dir)
+            result = self.transcribe (mp3_file_16k)
             result = self.saveResult (target_name, self.data_dir, result)
             text = result ['text']
-            print (target_name, '\n', text [:50], '...', text [-50:])
+            print (text [:50], '...', text [-50:])
+            
+            os.remove (mp3_file_16k)
         ### for
     ### main
 ### class

@@ -1,4 +1,5 @@
 data/
 tmp/
+whisper-am/
 .ipynb_checkpoints/
 __pycache__/
