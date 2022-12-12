@@ -2,6 +2,8 @@
 
 from docx import Document
 from docx.shared import Pt
+from docx_am import makeDocx
+
 import ffmpeg
 import glob
 import numpy as np
@@ -114,7 +116,8 @@ class WhisperAM :
 
 
         doc_file = output_dir + name + '.docx'
-        self.saveToDocx (text2, doc_file)
+        #self.saveToDocx (text2, doc_file)
+        makeDocx (srt_file, doc_file)
 
         return result    
     ###
@@ -149,6 +152,7 @@ class WhisperAM :
 
 
     # save to docx file
+    ### not used anymore. now using makeDocx in docx_am.py
     @staticmethod
     def saveToDocx (text, filename) :
         document = Document()
@@ -219,6 +223,8 @@ class WhisperAM :
         ### for
     ### main
 ### class
+
+
 
 
 def test () :
