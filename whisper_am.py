@@ -89,23 +89,23 @@ class WhisperAM :
         text = self.result ['text']
         segments = self.result ['segments']
 
-        # save temp SRT : caption
+        ### save temp SRT : caption
         srt_file_tmp = output_dir + name + '.srt.tmp'
         with open (srt_file_tmp, "w", encoding="utf-8") as wf:
             write_srt (segments, file=wf)
 
-        # postprocess srt
+        ### postprocess srt
         with open (srt_file_tmp) as rf:
             text = rf.read ()
             text2 = self.postprocess (text)
 
-        # save SRT : caption
+        ### save SRT : caption
         srt_file = output_dir + name + '.srt'
         with open (srt_file, "w", encoding="utf-8") as wf:
             wf.write (text2)
             os.remove (srt_file_tmp)
             
-        # post processing : apply macros
+        ### post processing : apply macros
         text = self.getText (segments)
         text2 = self.postprocess (text)
 
@@ -126,22 +126,22 @@ class WhisperAM :
 
     #@title postprocessing : macro, save to docx
 
-    # macro definition
+    ### macro definition
     rdict = { '1000s': 'thousands', 'a collective consciousness': 'the collective consciousness', 'Ascended Master': 'ascended master', 'a golden age': 'the golden age', 'And so ': '', 'And so, ': '', 'and so forth and so on': 'and so forth', "aren't": 'are not', 'behaviour': 'behavior', "can't": 'cannot', 'Christ to it': 'Christhood', 'colour': 'color', 'conscious you': 'Conscious You', "couldn't": 'could not', 'defence': 'defense', "didn't": 'did not', "doesn't": 'does not', "don't": 'do not', 'Earth': 'earth', 'fall and beaks': 'fallen beings', 'flavour': 'flavor', 'freewill': 'free will', 'fulfil': 'fulfill', 'Golden Age': 'golden age', "haven't": 'have not', "he's": 'he is', "I'm": 'I am', "isn't": 'is not', "it's": 'it is', "It's": 'It is', 'karmic board': 'Karmic Board', 'labour': 'labor', 'offence': 'offense', 'out picture': 'out-picture', 'realise': 'realize', 'saviour': 'savior', 'self awareness': 'self-awareness', "shouldn't": 'should not', 'summit lighthouse': 'Summit Lighthouse', "that's": 'that is', "That's": 'That is', "there's": 'there is', "There's": 'There is', "they're": 'they are', "wasn't": 'was not', "we're": 'we are', "We're": 'We are', "weren't": 'were not', "we've": 'we have', "What's": 'What is', "what's": 'what is', "wouldn't": 'would not', "won't": 'will not', "you'll": 'you will', "you're": 'you are', "You're": 'You are', 'So ': '', 'So, ': '', 'Well ': 'Well,', 'separate cell': 'separate self', 'separate cells': 'separate selves' }
 
 
     @staticmethod
     def multiple_replace (adict, text):
-        # Create a regular expression from all of the dictionary keys
+        ### Create a regular expression from all of the dictionary keys
         regex = re.compile ( "|".join (map (re.escape, adict.keys ( ))) )
 
-        # For each match, look up the corresponding value in the dictionary
+        ### For each match, look up the corresponding value in the dictionary
         return regex.sub (lambda match: adict [match.group (0)], text)
     ###
 
 
     def postprocess (self, text) :
-        # macro processing
+        ### macro processing
         callback = lambda pat: pat.group(2).upper()
         text2 = re.sub ('(So|So,|And so|And so,) ([a-zA-Z])', callback, text)
 
@@ -151,21 +151,21 @@ class WhisperAM :
     ###
 
 
-    # save to docx file
+    ### save to docx file
     ### not used anymore. now using makeDocx in docx_am.py
     @staticmethod
     def saveToDocx (text, filename) :
         document = Document()
         para = document.add_paragraph ()
 
-        # title
+        ### title
         title = '.'.join (filename.split ('/') [-1].split ('.') [:-1])
         run = para.add_run (title)
         run.font.size = Pt (16) # font size
         run.font.name = 'Arial' # font name
         run.bold = True
 
-        # body
+        ### body
         body = document.add_paragraph ()
         run = body.add_run ('\n')
 
@@ -174,12 +174,12 @@ class WhisperAM :
         run.font.size = Pt (14) # font size
         run.font.name = 'Arial' # font name
 
-        # save document
+        ### save document
         document.save (filename)
     ###        
 
 
-    # get input audio data list in 'data' folder
+    ### get input audio data list in 'data' folder
     @staticmethod
     def getFiles (data_dir) :
         files1 = glob.glob (data_dir + '/*.mp3')
@@ -190,17 +190,31 @@ class WhisperAM :
     ###
     
     
-    # down sample input audio to 16k
-    # https://www.programcreek.com/python/example/117479/ffmpeg.output
+    ### down sample input audio to 16k
+    ### https://www.programcreek.com/python/example/117479/ffmpeg.output
     @staticmethod
     def downSample (in_name, out_name) :
-        audio  = ffmpeg.input  (in_name).audio
-        stream = ffmpeg.output (audio, out_name, **{'ar': '16000', 'acodec': 'mp3'}).overwrite_output ()
-        out    = ffmpeg.run    (stream, capture_stdout=True, capture_stderr=True)
+        try :
+            audio  = ffmpeg.input  (in_name).audio
+            stream = ffmpeg.output (audio, out_name, **{'ar': '16000', 'acodec': 'mp3'}).overwrite_output ()
+            out    = ffmpeg.run    (stream, capture_stdout=True, capture_stderr=True)
+        except Exception as e :
+            print (e)
+    ###
+    
+    
+    #@title unassign google colab resource
+    @staticmethod
+    def unassignColab () :
+        print ('Google Colab resource unassigned.')
+
+        ### shutdown colab runtime. works well
+        #from google.colab import runtime
+        runtime.unassign()
     ###
     
 
-    # main program
+    ### main program
     def run (self) :
         self.loadModel ()
         input_data = self.getFiles (self.data_dir)
@@ -213,7 +227,7 @@ class WhisperAM :
 
             self.downSample (source_file_name, mp3_file_16k)
 
-            # trascribing
+            ### trascribing
             result = self.transcribe (mp3_file_16k)
             result = self.saveResult (target_name, self.data_dir, result)
             text = result ['text']
@@ -246,14 +260,6 @@ def test () :
     print ('Start :', time.strftime('%X %x %Z'))
     am.run ()
     print ('End  :', time.strftime('%X %x %Z'))
-
-
-    #@title unassign google colab resource
-    #print ('Google Colab resource unassigned.')
-    
-    # shutdown colab runtime. works well
-    #from google.colab import runtime
-    #runtime.unassign()
 ###
 
 

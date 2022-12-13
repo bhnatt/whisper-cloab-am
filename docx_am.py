@@ -16,8 +16,8 @@ def getSrt (srt_fn) :
     last_time = srt_list [-1].end.total_seconds ()
     split_length = int (last_time / NUM_PARAGRAPHS + 2)
 
-    print (last_time)
-    print ('half_time in seconds :', split_length)
+    #print (last_time)
+    #print ('half_time in seconds :', split_length)
     
     return srt_list, last_time, split_length
 ###
@@ -75,13 +75,13 @@ def getPartsText (srt_list, split_length) :
         parts.append (text)
         parts_start.append (start_time)
 
-        print ('words :', len (text.split (' ')))
-        print ('characters :', len (text))
+        #print ('words :', len (text.split (' ')))
+        #print ('characters :', len (text))
 
         sentences = sent_tokenize (text)
         #print (len (sentences))
         #print ('\n'.join (sentences))
-        print ('='*80)
+        #print ('='*80)
     ###
     
     return parts, parts_start
@@ -94,7 +94,7 @@ def splitToParagraphs (text, split_length=1000) :
     """
     
     tlen = len (text) ### total number of characters
-    mods = int (tlen / split_length + 0.5) ### number of paragraphs
+    mods = max (1, int (tlen / split_length + 0.5)) ### number of paragraphs
     para_size = int (tlen / mods) + 1 ### characters per paragraph
     
     sentences = sent_tokenize (text)
