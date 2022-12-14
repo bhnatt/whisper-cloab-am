@@ -209,8 +209,9 @@ class WhisperAM :
         print ('Google Colab resource unassigned.')
 
         ### shutdown colab runtime. works well
-        #from google.colab import runtime
-        runtime.unassign()
+        if is_google_colab :
+            #from google.colab import runtime
+            runtime.unassign ()
     ###
     
 
@@ -223,7 +224,10 @@ class WhisperAM :
             print (source_file_name)
 
             target_name = '.'.join (source_file_name.split ('/') [-1].split ('.') [:-1])
-            mp3_file_16k = self.data_dir + '/' + target_name + '-16k.mp3'
+            if is_google_colab :
+                mp3_file_16k = '/content/' + target_name + '-16k.mp3'
+            else :
+                mp3_file_16k = self.data_dir + '/' + target_name + '-16k.mp3'
 
             self.downSample (source_file_name, mp3_file_16k)
 
@@ -232,6 +236,7 @@ class WhisperAM :
             result = self.saveResult (target_name, self.data_dir, result)
             text = result ['text']
             print (text [:50], '...', text [-50:])
+            print ()
             
             os.remove (mp3_file_16k)
         ### for

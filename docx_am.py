@@ -143,8 +143,8 @@ from docx import Document
 from docx.shared import Pt
 import time
 
-# save to docx file
-@staticmethod
+
+### save to docx file
 def saveToDocx (title, doc_text, parts_start, time_length, filename) :
     document = Document()
     para = document.add_paragraph ()
@@ -187,6 +187,7 @@ def saveToDocx (title, doc_text, parts_start, time_length, filename) :
 ###
 
 
+### make docx file from the given srt file
 def makeDocx (srt_file, doc_file) :
     """ srt_file : input srt file
         doc_file : result docx file
