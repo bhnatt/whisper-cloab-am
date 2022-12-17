@@ -8,14 +8,19 @@ import ffmpeg
 import glob
 import numpy as np
 import os
+from os.path import basename
 import re
 import time
 import torch
 import whisper
 from whisper_utils import write_txt, write_srt
+from zipfile import ZipFile
+
 
 try:
     from google.colab import drive
+    from google.colab import files
+
     is_google_colab = True
 except ImportError:
     is_google_colab = False
@@ -215,6 +220,30 @@ class WhisperAM :
     ###
     
 
+    ### download docx files
+    @staticmethod
+    def downloadFiles (data_path) :
+        docx_files = glob.glob (data_path + '*.docx')
+
+        for doc_file in docx_files :
+            files.download (doc_file)
+    ###
+
+
+    ### download docx files in a zip file : docx.zip
+    @staticmethod
+    def downloadFilesZip (data_path) :
+        docx_files = glob.glob (data_path + '*.docx')
+
+        with ZipFile ('docx.zip', 'w') as zip_obj :
+            for doc_file in docx_files :
+                zip_obj.write (doc_file, basename (doc_file))
+        ###
+
+        files.download ('docx.zip')
+    ###
+
+
     ### main program
     def run (self) :
         self.loadModel ()
@@ -240,6 +269,9 @@ class WhisperAM :
             
             os.remove (mp3_file_16k)
         ### for
+
+        if is_google_colab :
+            self.downloadFiles (self.data_dir)
     ### main
 ### class
 
