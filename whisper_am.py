@@ -267,13 +267,16 @@ class WhisperAM :
             print (text [:50], '...', text [-50:])
             print ()
 
-            if is_google_colab :
-                #self.downloadFiles ()
+            if False and is_google_colab :
+                ### not working as expected. download after cell execution ends.
                 doc_file = self.data_dir + target_name + '.docx'
                 files.download (doc_file)
             
             os.remove (mp3_file_16k)
         ### for
+
+        if is_google_colab :
+            self.downloadFiles (self.data_dir)
     ### main
 ### class
 
