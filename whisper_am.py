@@ -248,7 +248,7 @@ class WhisperAM :
 
 
     ### main program
-    def run (self) :
+    def run (self, doc_download=False) :
         self.loadModel ()
         input_data = self.getFiles (self.data_dir)
         
@@ -278,7 +278,7 @@ class WhisperAM :
             os.remove (mp3_file_16k)
         ### for
 
-        if is_google_colab :
+        if is_google_colab and doc_download :
             self.downloadFiles (self.data_dir)
     ### main
 ### class
@@ -298,12 +298,13 @@ def test () :
     print (data_path)
 
     model_name   = 'medium.en'
+    doc_download = False
     
     am = WhisperAM (model_name, data_path)
     am.checkCuda ()
 
     print ('Start :', time.strftime('%X %x %Z'))
-    am.run ()
+    am.run (doc_download=doc_download)
     print ('End  :', time.strftime('%X %x %Z'))
 ###
 
