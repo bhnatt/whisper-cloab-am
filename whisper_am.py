@@ -86,7 +86,7 @@ class WhisperAM :
 
     #@title transcribe function definition
     def transcribe (self, mp3_file) :
-        self.result = self.model.transcribe (mp3_file, verbose=True, initial_prompt=self.initial_prompt, **self.transcribe_options)
+        self.result = self.model.transcribe (mp3_file, verbose=False, initial_prompt=self.initial_prompt, **self.transcribe_options)
         return self.result
     ###
         
