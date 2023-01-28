@@ -14,7 +14,7 @@ def getSrt (srt_fn) :
         srt_list = list (srt_data)
 
     last_time = srt_list [-1].end.total_seconds ()
-    split_length = int (last_time / NUM_PARAGRAPHS + 2)
+    split_length = int (last_time / NUM_PARAGRAPHS + 2) ### make sure no small part is left
 
     #print (last_time)
     #print ('half_time in seconds :', split_length)
@@ -38,11 +38,10 @@ def getParts (srt_list, split_length) : ### length of a part in seconds
         if start_time == -1 :
             start_time = st
 
-        if st < split_time :
-            if content != 'CHEERING AND APPLAUSE' :
-                text_lines.append (content)
-            continue
-        ###
+        if content != 'CHEERING AND APPLAUSE' :
+            text_lines.append (content)
+
+        if st < split_time : continue
         
         #print ('###', index, st, content)
         text = ' '.join (text_lines)
