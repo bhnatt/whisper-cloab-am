@@ -42,10 +42,12 @@ def mountDrive () :
 
             
 class WhisperAM :
-    def __init__ (self, model_name, data_dir) :
+    def __init__ (self, model_name, data_dir, initial_prompt="", doc_download=True) :
         self.model_name = model_name
         self.data_dir   = data_dir
         self.out_dir = self.data_dir
+        # self.initial_prompt = initial_prompt
+        self.doc_download = doc_download
         
         isExist = os.path.exists (self.out_dir)
         if not isExist :
@@ -133,7 +135,7 @@ class WhisperAM :
     #@title postprocessing : macro, save to docx
 
     ### macro definition
-    rdict = { '1000s': 'thousands', 'a collective consciousness': 'the collective consciousness', 'Ascended Master': 'ascended master', 'a golden age': 'the golden age', 'And so ': '', 'And so, ': '', 'and so forth and so on': 'and so forth', "aren't": 'are not', 'behaviour': 'behavior', "can't": 'cannot', 'Christ to it': 'Christhood', 'colour': 'color', 'conscious you': 'Conscious You', "couldn't": 'could not', 'defence': 'defense', "didn't": 'did not', "doesn't": 'does not', "don't": 'do not', 'Earth': 'earth', 'fall and beaks': 'fallen beings', 'flavour': 'flavor', 'freewill': 'free will', 'fulfilll': 'fulfill', 'Golden Age': 'golden age', "haven't": 'have not', "he's": 'he is', "I'm": 'I am', "isn't": 'is not', "it's": 'it is', "It's": 'It is', 'karmic board': 'Karmic Board', 'labour': 'labor', 'offence': 'offense', 'out picture': 'out-picture', 'realise': 'realize', 'saviour': 'savior', 'self awareness': 'self-awareness', "shouldn't": 'should not', 'summit lighthouse': 'Summit Lighthouse', "that's": 'that is', "That's": 'That is', "there's": 'there is', "There's": 'There is', "they're": 'they are', "wasn't": 'was not', "we're": 'we are', "We're": 'We are', "weren't": 'were not', "we've": 'we have', "What's": 'What is', "what's": 'what is', "wouldn't": 'would not', "won't": 'will not', "you'll": 'you will', "you're": 'you are', "You're": 'You are', "here's": "here is", "Here's": "Here is", "where's": "where is", "who's": "who is", "Who's": "Who is", "I've": "I have", 'So ': '', 'So, ': '', 'Well ': 'Well, ', 'separate cell': 'separate self', 'separate cells': 'separate selves', 'followers bodies': "four lower bodies", "matter light": "Ma-ter light" }
+    rdict = { '1000s': 'thousands', 'a collective consciousness': 'the collective consciousness', 'Ascended Master': 'ascended master', 'a golden age': 'the golden age', 'And so ': '', 'And so, ': '', 'and so forth and so on': 'and so forth', "aren't": 'are not', 'behaviour': 'behavior', "can't": 'cannot', 'Christ to it': 'Christhood', 'colour': 'color', 'conscious you': 'Conscious You', "couldn't": 'could not', 'defence': 'defense', "didn't": 'did not', "doesn't": 'does not', "don't": 'do not', 'Earth': 'earth', 'fall and beaks': 'fallen beings', 'flavour': 'flavor', 'freewill': 'free will', 'fulfilll': 'fulfill', 'Golden Age': 'golden age', "haven't": 'have not', "he's": 'he is', "I'm": 'I am', "isn't": 'is not', "it's": 'it is', "It's": 'It is', 'karmic board': 'Karmic Board', 'labour': 'labor', 'offence': 'offense', 'out picture': 'out-picture', 'outpicture': 'out-picture', 'realise': 'realize', 'saviour': 'savior', 'self awareness': 'self-awareness', "shouldn't": 'should not', 'summit lighthouse': 'Summit Lighthouse', "that's": 'that is', "That's": 'That is', "there's": 'there is', "There's": 'There is', "they're": 'they are', "wasn't": 'was not', "we're": 'we are', "We're": 'We are', "weren't": 'were not', "we've": 'we have', "What's": 'What is', "what's": 'what is', "wouldn't": 'would not', "won't": 'will not', "you'll": 'you will', "you're": 'you are', "You're": 'You are', "here's": "here is", "Here's": "Here is", "where's": "where is", "who's": "who is", "Who's": "Who is", "I've": "I have", 'So ': '', 'So, ': '', 'Well ': 'Well, ', 'separate cell': 'separate self', 'separate cells': 'separate selves', 'followers bodies': "four lower bodies", "matter light": "Ma-ter light", "log in": "lock in", "divine plan": "Divine Plan", "other ascended": "unascended", "an embodiment": "in embodiment" }
 
 
     @staticmethod
@@ -248,7 +250,7 @@ class WhisperAM :
 
 
     ### main program
-    def run (self, doc_download=False) :
+    def run (self) :
         self.loadModel ()
         input_data = self.getFiles (self.data_dir)
         
@@ -278,7 +280,7 @@ class WhisperAM :
             os.remove (mp3_file_16k)
         ### for
 
-        if is_google_colab and doc_download :
+        if is_google_colab and self.doc_download :
             self.downloadFiles (self.data_dir)
     ### main
 ### class
