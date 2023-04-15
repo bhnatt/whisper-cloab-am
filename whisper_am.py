@@ -15,11 +15,13 @@ import torch
 import whisper
 from whisper_utils import write_txt, write_srt
 from zipfile import ZipFile
+from br2us import british_to_american
 
 
 try:
     from google.colab import drive
     from google.colab import files
+    from google.colab import runtime
 
     is_google_colab = True
 except ImportError:
@@ -84,11 +86,11 @@ class WhisperAM :
 
     options = dict (language='English', beam_size=5, best_of=5)
     transcribe_options = dict (task="transcribe", **options)
-    initial_prompt = "to give forth spiritual teachings for ascended master students in embodiment with four lower bodies and separate selves (outer selves)"
 
     #@title transcribe function definition
     def transcribe (self, mp3_file) :
-        self.result = self.model.transcribe (mp3_file, verbose=False, initial_prompt=self.initial_prompt, **self.transcribe_options)
+        # self.result = self.model.transcribe (mp3_file, verbose=False, initial_prompt=self.initial_prompt, **self.transcribe_options)
+        self.result = self.model.transcribe (mp3_file, verbose=False, **self.transcribe_options)
         return self.result
     ###
         
@@ -134,9 +136,6 @@ class WhisperAM :
 
     #@title postprocessing : macro, save to docx
 
-    ### macro definition
-    rdict = { '1000s': 'thousands', 'a collective consciousness': 'the collective consciousness', 'Ascended Master': 'ascended master', 'a golden age': 'the golden age', 'And so ': '', 'And so, ': '', 'and so forth and so on': 'and so forth', "aren't": 'are not', 'behaviour': 'behavior', "can't": 'cannot', 'Christ to it': 'Christhood', 'colour': 'color', 'conscious you': 'Conscious You', "couldn't": 'could not', 'defence': 'defense', "didn't": 'did not', "doesn't": 'does not', "don't": 'do not', 'Earth': 'earth', 'fall and beaks': 'fallen beings', 'flavour': 'flavor', 'freewill': 'free will', 'fulfilll': 'fulfill', 'Golden Age': 'golden age', "haven't": 'have not', "he's": 'he is', "I'm": 'I am', "isn't": 'is not', "it's": 'it is', "It's": 'It is', 'karmic board': 'Karmic Board', 'labour': 'labor', 'offence': 'offense', 'out picture': 'out-picture', 'outpicture': 'out-picture', 'realise': 'realize', 'saviour': 'savior', 'self awareness': 'self-awareness', "shouldn't": 'should not', 'summit lighthouse': 'Summit Lighthouse', "that's": 'that is', "That's": 'That is', "there's": 'there is', "There's": 'There is', "they're": 'they are', "wasn't": 'was not', "we're": 'we are', "We're": 'We are', "weren't": 'were not', "we've": 'we have', "What's": 'What is', "what's": 'what is', "wouldn't": 'would not', "won't": 'will not', "you'll": 'you will', "you're": 'you are', "You're": 'You are', "here's": "here is", "Here's": "Here is", "where's": "where is", "who's": "who is", "Who's": "Who is", "I've": "I have", 'So ': '', 'So, ': '', 'Well ': 'Well, ', 'separate cell': 'separate self', 'separate cells': 'separate selves', 'followers bodies': "four lower bodies", "matter light": "Ma-ter light", "log in": "lock in", "divine plan": "Divine Plan", "other ascended": "unascended", "an embodiment": "in embodiment" }
-
 
     @staticmethod
     def multiple_replace (adict, text):
@@ -149,13 +148,12 @@ class WhisperAM :
 
 
     def postprocess (self, text) :
-        # return text ### testing
-
         ### macro processing
         callback = lambda pat: pat.group(2).upper()
         text2 = re.sub ('(So|So,|And so|And so,) ([a-zA-Z])', callback, text) ### capitalize after So, And so
 
-        text2 = self.multiple_replace (self.rdict, text2)
+        text2 = british_to_american (text2) ### convert British to American English
+        # text2 = self.multiple_replace (self.rdict, text2)
 
         return text2
     ###
@@ -220,7 +218,6 @@ class WhisperAM :
 
         ### shutdown colab runtime. works well
         if is_google_colab :
-            #from google.colab import runtime
             runtime.unassign ()
     ###
     
@@ -228,24 +225,26 @@ class WhisperAM :
     ### download docx files
     @staticmethod
     def downloadFiles (data_path) :
-        docx_files = glob.glob (data_path + '*.docx')
+        if is_google_colab :
+            docx_files = glob.glob (data_path + '*.docx')
 
-        for doc_file in docx_files :
-            files.download (doc_file)
+            for doc_file in docx_files :
+                files.download (doc_file)
     ###
 
 
     ### download docx files in a zip file : docx.zip
     @staticmethod
     def downloadFilesZip (data_path) :
-        docx_files = glob.glob (data_path + '*.docx')
+        if is_google_colab :
+            docx_files = glob.glob (data_path + '*.docx')
 
-        with ZipFile ('docx.zip', 'w') as zip_obj :
-            for doc_file in docx_files :
-                zip_obj.write (doc_file, basename (doc_file))
-        ###
+            with ZipFile ('docx.zip', 'w') as zip_obj :
+                for doc_file in docx_files :
+                    zip_obj.write (doc_file, basename (doc_file))
+            ###
 
-        files.download ('docx.zip')
+            files.download ('docx.zip')
     ###
 
 
@@ -263,7 +262,9 @@ class WhisperAM :
             else :
                 mp3_file_16k = self.data_dir + '/' + target_name + '-16k.mp3'
 
-            self.downSample (source_file_name, mp3_file_16k)
+            ### don't need to downsample. original file is better for whisper
+            # self.downSample (source_file_name, mp3_file_16k)
+            mp3_file_16k = source_file_name
 
             ### trascribing
             result = self.transcribe (mp3_file_16k)
@@ -271,11 +272,6 @@ class WhisperAM :
             text = result ['text']
             print (text [:50], '...', text [-50:])
             print ()
-
-            if False and is_google_colab :
-                ### not working as expected. download after cell execution ends.
-                doc_file = self.data_dir + target_name + '.docx'
-                files.download (doc_file)
             
             os.remove (mp3_file_16k)
         ### for
