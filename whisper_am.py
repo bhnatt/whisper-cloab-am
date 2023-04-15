@@ -15,7 +15,7 @@ import torch
 import whisper
 from whisper_utils import write_txt, write_srt
 from zipfile import ZipFile
-from br2us import british_to_american
+# from br2us import british_to_american
 
 
 try:
