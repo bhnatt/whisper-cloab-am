@@ -84,7 +84,8 @@ class WhisperAM :
     ###
 
 
-    options = dict (language='English', beam_size=5, best_of=5)
+    #options = dict (language='English', beam_size=5, best_of=5)
+    options = dict (language='English', beam_size=1, best_of=5)
     transcribe_options = dict (task="transcribe", **options)
 
     #@title transcribe function definition
