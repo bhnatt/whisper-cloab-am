@@ -12,10 +12,18 @@ from os.path import basename
 import re
 import time
 import torch
-import whisper
 from whisper_utils import write_txt, write_srt
 from zipfile import ZipFile
 # from br2us import british_to_american
+
+
+FASTER = True ### use faster-whisper
+# print ('FASTER :' , FASTER, 'whisper_am.py')
+
+if FASTER :
+    from faster_whisper import WhisperModel
+else :
+    import whisper
 
 
 try:
@@ -73,7 +81,11 @@ class WhisperAM :
 
     #@title Whisper model selection : medium.en (default)
     def loadModel (self) :
-        self.model = whisper.load_model (self.model_name)
+        if FASTER :
+            self.model = WhisperModel (self.model_name, device=self.DEVICE, compute_type="float16") ### faster whisper
+        else :
+            self.model = whisper.load_model (self.model_name) ### default whisper
+
         #self.model = whisper.load_model (self.model_name, device=self.DEVICE)
     ###
 
@@ -98,11 +110,36 @@ class WhisperAM :
             self.result = self.model.transcribe (mp3_file, verbose=False, **transcribe_options)
 
         return self.result
-    ###
-        
+    ###        
     
+
+    #@title faster transcribe function definition
+    def transcribeFaster (self, mp3_file) :
+        options = dict (language='English', beam_size=self.beam_size, best_of=5)
+        transcribe_options = dict (task="transcribe", **options)
+        
+        if self.initial_prompt != "" :
+            segments, info = self.model.transcribe (mp3_file, initial_prompt=self.initial_prompt, **transcribe_options)
+        else :
+            segments, info = self.model.transcribe (mp3_file, **transcribe_options)
+
+        segments = list (segments)
+        segments2 = []
+        text = []
+
+        for s in segments :
+            seg = { 'start': s.start, 'end': s.end, 'text': s.text.strip () }
+            segments2.append (seg)
+            text.append (s.text.strip ())
+
+        self.result = dict (segments=segments2, text=text)
+
+        return self.result
+    ###
+
+
     def saveResult (self, name, output_dir, result) :
-        text = self.result ['text']
+        # text = self.result ['text']
         segments = self.result ['segments']
 
         ### save temp SRT : caption
@@ -275,13 +312,17 @@ class WhisperAM :
             self.downSample (source_file_name, mp3_file_16k)
 
             ### trascribing
-            result = self.transcribe (mp3_file_16k)
-            result = self.saveResult (target_name, self.data_dir, result)
-            text = result ['text']
+            if FASTER :
+                result = self.transcribeFaster (mp3_file_16k)
+            else :
+                result = self.transcribe (mp3_file_16k)
+
+            save_result = self.saveResult (target_name, self.data_dir, result)
+            text = save_result ['text']
             print (text [:50], '...', text [-50:])
             print ()
             
-            # os.remove (mp3_file_16k)
+            os.remove (mp3_file_16k)
         ### for
 
         if is_google_colab and self.doc_download :

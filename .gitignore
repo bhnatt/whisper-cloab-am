@@ -1,5 +1,6 @@
 data/
 tmp/
+whisper/
 whisper-am/
 whisper-am_/
 .ipynb_checkpoints/

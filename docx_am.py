@@ -77,7 +77,7 @@ def getPartsText (srt_list, split_length) :
         #print ('words :', len (text.split (' ')))
         #print ('characters :', len (text))
 
-        sentences = sent_tokenize (text)
+        # sentences = sent_tokenize (text)
         #print (len (sentences))
         #print ('\n'.join (sentences))
         #print ('='*80)
