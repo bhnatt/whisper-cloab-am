@@ -16,14 +16,11 @@ from whisper_utils import write_txt, write_srt
 from zipfile import ZipFile
 # from br2us import british_to_american
 
-
-FASTER = True ### use faster-whisper
+# FASTER = True ### use faster-whisper
 # print ('FASTER :' , FASTER, 'whisper_am.py')
 
-if FASTER :
-    from faster_whisper import WhisperModel
-else :
-    import whisper
+import whisper
+from faster_whisper import WhisperModel
 
 
 try:
@@ -53,13 +50,14 @@ def mountDrive () :
 
             
 class WhisperAM :
-    def __init__ (self, model_name, data_dir, initial_prompt="", doc_download=True, beam_size=5) :
+    def __init__ (self, model_name, data_dir, initial_prompt="", doc_download=True, beam_size=5, FASTER=True) :
         self.model_name     = model_name
         self.data_dir       = data_dir
         self.out_dir        = data_dir
         self.initial_prompt = initial_prompt
         self.doc_download   = doc_download
         self.beam_size      = beam_size
+        self.FASTER         = FASTER
         
         isExist = os.path.exists (self.out_dir)
         if not isExist :
@@ -81,7 +79,7 @@ class WhisperAM :
 
     #@title Whisper model selection : medium.en (default)
     def loadModel (self) :
-        if FASTER :
+        if self.FASTER :
             self.model = WhisperModel (self.model_name, device=self.DEVICE, compute_type="float16") ### faster whisper
         else :
             self.model = whisper.load_model (self.model_name) ### default whisper
@@ -312,7 +310,7 @@ class WhisperAM :
             self.downSample (source_file_name, mp3_file_16k)
 
             ### trascribing
-            if FASTER :
+            if self.FASTER :
                 result = self.transcribeFaster (mp3_file_16k)
             else :
                 result = self.transcribe (mp3_file_16k)
