@@ -24,6 +24,7 @@ try:
     from google.colab import runtime
 
     is_google_colab = True
+
 except ImportError:
     is_google_colab = False
 
@@ -44,12 +45,13 @@ def mountDrive () :
 
             
 class WhisperAM :
-    def __init__ (self, model_name, data_dir, initial_prompt="", doc_download=True) :
-        self.model_name = model_name
-        self.data_dir   = data_dir
-        self.out_dir = self.data_dir
-        # self.initial_prompt = initial_prompt
-        self.doc_download = doc_download
+    def __init__ (self, model_name, data_dir, initial_prompt="", doc_download=True, beam_size=5) :
+        self.model_name     = model_name
+        self.data_dir       = data_dir
+        self.out_dir        = data_dir
+        self.initial_prompt = initial_prompt
+        self.doc_download   = doc_download
+        self.beam_size      = beam_size
         
         isExist = os.path.exists (self.out_dir)
         if not isExist :
@@ -71,7 +73,8 @@ class WhisperAM :
 
     #@title Whisper model selection : medium.en (default)
     def loadModel (self) :
-        self.model = whisper.load_model (self.model_name, device=self.DEVICE)
+        self.model = whisper.load_model (self.model_name)
+        #self.model = whisper.load_model (self.model_name, device=self.DEVICE)
     ###
 
 
@@ -84,14 +87,16 @@ class WhisperAM :
     ###
 
 
-    #options = dict (language='English', beam_size=5, best_of=5)
-    options = dict (language='English', beam_size=1, best_of=5)
-    transcribe_options = dict (task="transcribe", **options)
-
     #@title transcribe function definition
     def transcribe (self, mp3_file) :
-        # self.result = self.model.transcribe (mp3_file, verbose=False, initial_prompt=self.initial_prompt, **self.transcribe_options)
-        self.result = self.model.transcribe (mp3_file, verbose=False, **self.transcribe_options)
+        options = dict (language='English', beam_size=self.beam_size, best_of=5)
+        transcribe_options = dict (task="transcribe", **options)
+        
+        if self.initial_prompt != "" :
+            self.result = self.model.transcribe (mp3_file, verbose=False, initial_prompt=self.initial_prompt, **transcribe_options)
+        else :
+            self.result = self.model.transcribe (mp3_file, verbose=False, **transcribe_options)
+
         return self.result
     ###
         
@@ -219,10 +224,9 @@ class WhisperAM :
     #@title unassign google colab resource
     @staticmethod
     def unassignColab () :
-        print ('Google Colab resource unassigned.')
-
         ### shutdown colab runtime. works well
         if is_google_colab :
+            print ('Google Colab resource unassigned.')
             runtime.unassign ()
     ###
     
@@ -268,8 +272,7 @@ class WhisperAM :
                 mp3_file_16k = self.data_dir + '/' + target_name + '-16k.mp3'
 
             ### don't need to downsample. original file is better for whisper
-            # self.downSample (source_file_name, mp3_file_16k)
-            mp3_file_16k = source_file_name
+            self.downSample (source_file_name, mp3_file_16k)
 
             ### trascribing
             result = self.transcribe (mp3_file_16k)
@@ -278,7 +281,7 @@ class WhisperAM :
             print (text [:50], '...', text [-50:])
             print ()
             
-            os.remove (mp3_file_16k)
+            # os.remove (mp3_file_16k)
         ### for
 
         if is_google_colab and self.doc_download :
@@ -300,14 +303,14 @@ def test () :
     data_path   = google_drive + data_dir
     print (data_path)
 
-    model_name   = 'medium.en'
+    model_name   = 'tiny.en'
     doc_download = False
     
-    am = WhisperAM (model_name, data_path)
+    am = WhisperAM (model_name, data_path, doc_download=doc_download)
     am.checkCuda ()
 
     print ('Start :', time.strftime('%X %x %Z'))
-    am.run (doc_download=doc_download)
+    am.run ()
     print ('End  :', time.strftime('%X %x %Z'))
 ###
 
