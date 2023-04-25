@@ -130,7 +130,7 @@ class WhisperAM :
             segments2.append (seg)
             text.append (s.text.strip ())
 
-        self.result = dict (segments=segments2, text=text)
+        self.result = dict (segments=segments2, text=' '.join (text))
 
         return self.result
     ###
