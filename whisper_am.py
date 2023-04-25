@@ -324,7 +324,7 @@ class WhisperAM :
         ### for
 
         if is_google_colab and self.doc_download :
-            self.downloadFiles (self.data_dir)
+            self.downloadFilesZip (self.data_dir)
     ### main
 ### class
 
