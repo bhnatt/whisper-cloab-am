@@ -237,9 +237,10 @@ class WhisperAM :
     def getFiles (data_dir) :
         files1 = glob.glob (data_dir + '/*.mp3')
         files2 = glob.glob (data_dir + '/*.m4a')
-        files1 = glob.glob (data_dir + '/*.MP3')
+        files3 = glob.glob (data_dir + '/*.MP3')
+        files4 = glob.glob (data_dir + '/*.M4A')
 
-        input_data = files1 + files2
+        input_data = files1 + files2 + files3 + files4
         return input_data
     ###
     
