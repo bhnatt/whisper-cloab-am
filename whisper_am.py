@@ -113,7 +113,7 @@ class WhisperAM :
 
     #@title faster transcribe function definition
     def transcribeFaster (self, mp3_file) :
-        options = dict (language='en', beam_size=self.beam_size, best_of=5, vad_filter=True)
+        options = dict (language='en', beam_size=self.beam_size, best_of=5, vad_filter=True, vad_parameters=dict(min_silence_duration_ms=500))
         transcribe_options = dict (task="transcribe", **options)
         
         if self.initial_prompt != "" :
