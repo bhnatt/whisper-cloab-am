@@ -15,12 +15,16 @@ import torch
 from whisper_utils import write_txt, write_srt
 from zipfile import ZipFile
 # from br2us import british_to_american
+from dict import rdict, mapEn2En
 
-# FASTER = True ### use faster-whisper
+
+FASTER = True ### use faster-whisper
 # print ('FASTER :' , FASTER, 'whisper_am.py')
 
-import whisper
-from faster_whisper import WhisperModel
+if FASTER :
+    from faster_whisper import WhisperModel
+else :
+    import whisper
 
 
 try:
@@ -180,7 +184,7 @@ class WhisperAM :
 
 
     ### macro definition
-    rdict = { '1000s': 'thousands', 'a collective consciousness': 'the collective consciousness', 'Ascended Master': 'ascended master', 'a golden age': 'the golden age', 'And so ': '', 'And so, ': '', 'and so forth and so on': 'and so forth', "aren't": 'are not', 'behaviour': 'behavior', "can't": 'cannot', 'Christ to it': 'Christhood', 'colour': 'color', 'conscious you': 'Conscious You', "couldn't": 'could not', 'defence': 'defense', "didn't": 'did not', "doesn't": 'does not', "don't": 'do not', 'Earth': 'earth', 'fall and beaks': 'fallen beings', 'flavour': 'flavor', 'freewill': 'free will', 'Golden Age': 'golden age', "haven't": 'have not', "he's": 'he is', "I'm": 'I am', "isn't": 'is not', "it's": 'it is', "It's": 'It is', 'karmic board': 'Karmic Board', 'labour': 'labor', 'offence': 'offense', 'out picture': 'out-picture', 'outpicture': 'out-picture', 'realise': 'realize', 'saviour': 'savior', 'self awareness': 'self-awareness', "shouldn't": 'should not', 'summit lighthouse': 'Summit Lighthouse', "that's": 'that is', "That's": 'That is', "there's": 'there is', "There's": 'There is', "they're": 'they are', "wasn't": 'was not', "we're": 'we are', "We're": 'We are', "weren't": 'were not', "we've": 'we have', "What's": 'What is', "what's": 'what is', "wouldn't": 'would not', "won't": 'will not', "you'll": 'you will', "you're": 'you are', "You're": 'You are', "here's": "here is", "Here's": "Here is", "where's": "where is", "who's": "who is", "Who's": "Who is", "I've": "I have", 'So ': '', 'So, ': '', 'Well ': 'Well, ', 'separate cell': 'separate self', 'separate cells': 'separate selves', 'followers bodies': "four lower bodies", "matter light": "Ma-ter light", "log in": "lock in", "divine plan": "Divine Plan", "other ascended": "unascended", "an embodiment": "in embodiment" }
+    rdict_org = { '1000s': 'thousands', 'a collective consciousness': 'the collective consciousness', 'Ascended Master': 'ascended master', 'a golden age': 'the golden age', 'And so ': '', 'And so, ': '', 'and so forth and so on': 'and so forth', "aren't": 'are not', 'behaviour': 'behavior', "can't": 'cannot', 'Christ to it': 'Christhood', 'colour': 'color', 'conscious you': 'Conscious You', "couldn't": 'could not', 'defence': 'defense', "didn't": 'did not', "doesn't": 'does not', "don't": 'do not', 'Earth': 'earth', 'fall and beaks': 'fallen beings', 'flavour': 'flavor', 'freewill': 'free will', 'Golden Age': 'golden age', "haven't": 'have not', "he's": 'he is', "I'm": 'I am', "isn't": 'is not', "it's": 'it is', "It's": 'It is', 'karmic board': 'Karmic Board', 'labour': 'labor', 'offence': 'offense', 'out picture': 'out-picture', 'outpicture': 'out-picture', 'realise': 'realize', 'saviour': 'savior', 'self awareness': 'self-awareness', "shouldn't": 'should not', 'summit lighthouse': 'Summit Lighthouse', "that's": 'that is', "That's": 'That is', "there's": 'there is', "There's": 'There is', "they're": 'they are', "wasn't": 'was not', "we're": 'we are', "We're": 'We are', "weren't": 'were not', "we've": 'we have', "What's": 'What is', "what's": 'what is', "wouldn't": 'would not', "won't": 'will not', "you'll": 'you will', "you're": 'you are', "You're": 'You are', "here's": "here is", "Here's": "Here is", "where's": "where is", "who's": "who is", "Who's": "Who is", "I've": "I have", 'So ': '', 'So, ': '', 'Well ': 'Well, ', 'separate cell': 'separate self', 'separate cells': 'separate selves', 'followers bodies': "four lower bodies", "matter light": "Ma-ter light", "log in": "lock in", "divine plan": "Divine Plan", "other ascended": "unascended", "an embodiment": "in embodiment" }
 
 
     @staticmethod
@@ -199,7 +203,9 @@ class WhisperAM :
         text2 = re.sub ('(So|So,|And so|And so,) ([a-zA-Z])', callback, text) ### capitalize after So, And so
 
         # text2 = british_to_american (text2) ### convert British to American English
-        text2 = self.multiple_replace (self.rdict, text2)
+        #text2 = self.multiple_replace (self.rdict, text2)
+        text2 = self.multiple_replace (rdict, text2)
+        text2 = mapEn2En (text2)
 
         return text2
     ###
