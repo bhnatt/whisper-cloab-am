@@ -18,7 +18,7 @@ from zipfile import ZipFile
 from dict import rdict, mapEn2En
 
 
-FASTER = True ### use faster-whisper
+FASTER = False ### use faster-whisper
 # print ('FASTER :' , FASTER, 'whisper_am.py')
 
 if FASTER :
