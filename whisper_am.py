@@ -18,7 +18,7 @@ from zipfile import ZipFile
 from dict import rdict, mapEn2En
 
 
-FASTER = False ### use faster-whisper
+FASTER = True ### use faster-whisper
 # print ('FASTER :' , FASTER, 'whisper_am.py')
 
 if FASTER :
@@ -54,7 +54,7 @@ def mountDrive () :
 
             
 class WhisperAM :
-    def __init__ (self, model_name, data_dir, initial_prompt="", doc_download=True, beam_size=5, FASTER=True) :
+    def __init__ (self, model_name, data_dir, initial_prompt="", doc_download=True, beam_size=3, FASTER=True) :
         self.model_name     = model_name
         self.data_dir       = data_dir
         self.out_dir        = data_dir
@@ -119,7 +119,8 @@ class WhisperAM :
     def transcribeFaster (self, mp3_file) :
         # options = dict (language='English', beam_size=self.beam_size, best_of=5)
         #options = dict (language='English', beam_size=self.beam_size, best_of=5, vad_filter=True)
-        options = dict (language='en', beam_size=self.beam_size, best_of=5, vad_filter=True)
+        #options = dict (language='en', beam_size=self.beam_size, best_of=5, vad_filter=True)
+        options = dict (language='en', beam_size=self.beam_size, best_of=5, vad_filter=True, vad_parameters=dict(min_silence_duration_ms=20))
         transcribe_options = dict (task="transcribe", **options)
         
         if self.initial_prompt != "" :
