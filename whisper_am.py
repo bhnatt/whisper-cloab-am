@@ -18,7 +18,8 @@ from zipfile import ZipFile
 from dict import rdict, mapEn2En
 
 
-FASTER = False ### use faster-whisper
+# FASTER = False ### not use faster-whisper
+FASTER = True ### use faster-whisper
 # print ('FASTER :' , FASTER, 'whisper_am.py')
 
 if FASTER :
@@ -54,10 +55,10 @@ def mountDrive () :
 
             
 class WhisperAM :
-    def __init__ (self, model_name, data_dir, initial_prompt="", doc_download=True, beam_size=5, FASTER=True) :
+    def __init__ (self, model_name, data_dir, out_dir='', initial_prompt="", doc_download=True, beam_size=5, FASTER=True) :
         self.model_name     = model_name
         self.data_dir       = data_dir
-        self.out_dir        = data_dir
+        self.out_dir        = out_dir if out_dir != '' else data_dir
         self.initial_prompt = initial_prompt
         self.doc_download   = doc_download
         self.beam_size      = beam_size
@@ -119,7 +120,9 @@ class WhisperAM :
     def transcribeFaster (self, mp3_file) :
         # options = dict (language='English', beam_size=self.beam_size, best_of=5)
         #options = dict (language='English', beam_size=self.beam_size, best_of=5, vad_filter=True)
-        options = dict (language='en', beam_size=self.beam_size, best_of=5, vad_filter=True)
+        # options = dict (language='en', beam_size=self.beam_size, best_of=5, vad_filter=True)
+        options = dict (language='en', beam_size=self.beam_size, best_of=5, vad_filter=True, vad_parameters=dict(min_silence_duration_ms=1000)) ### duration_ms를 늘리면 빠른 구술시 처리가 밀리는 현상이 발생
+        
         transcribe_options = dict (task="transcribe", **options)
         
         if self.initial_prompt != "" :
@@ -182,10 +185,6 @@ class WhisperAM :
 
 
     #@title postprocessing : macro, save to docx
-
-
-    ### macro definition
-    rdict_org = { '1000s': 'thousands', 'a collective consciousness': 'the collective consciousness', 'Ascended Master': 'ascended master', 'a golden age': 'the golden age', 'And so ': '', 'And so, ': '', 'and so forth and so on': 'and so forth', "aren't": 'are not', 'behaviour': 'behavior', "can't": 'cannot', 'Christ to it': 'Christhood', 'colour': 'color', 'conscious you': 'Conscious You', "couldn't": 'could not', 'defence': 'defense', "didn't": 'did not', "doesn't": 'does not', "don't": 'do not', 'Earth': 'earth', 'fall and beaks': 'fallen beings', 'flavour': 'flavor', 'freewill': 'free will', 'Golden Age': 'golden age', "haven't": 'have not', "he's": 'he is', "I'm": 'I am', "isn't": 'is not', "it's": 'it is', "It's": 'It is', 'karmic board': 'Karmic Board', 'labour': 'labor', 'offence': 'offense', 'out picture': 'out-picture', 'outpicture': 'out-picture', 'realise': 'realize', 'saviour': 'savior', 'self awareness': 'self-awareness', "shouldn't": 'should not', 'summit lighthouse': 'Summit Lighthouse', "that's": 'that is', "That's": 'That is', "there's": 'there is', "There's": 'There is', "they're": 'they are', "wasn't": 'was not', "we're": 'we are', "We're": 'We are', "weren't": 'were not', "we've": 'we have', "What's": 'What is', "what's": 'what is', "wouldn't": 'would not', "won't": 'will not', "you'll": 'you will', "you're": 'you are', "You're": 'You are', "here's": "here is", "Here's": "Here is", "where's": "where is", "who's": "who is", "Who's": "Who is", "I've": "I have", 'So ': '', 'So, ': '', 'Well ': 'Well, ', 'separate cell': 'separate self', 'separate cells': 'separate selves', 'followers bodies': "four lower bodies", "matter light": "Ma-ter light", "log in": "lock in", "divine plan": "Divine Plan", "other ascended": "unascended", "an embodiment": "in embodiment" }
 
 
     @staticmethod
@@ -339,7 +338,7 @@ class WhisperAM :
 
 
 
-def test () :
+def test_google_drive () :
     #@title run Whisper
 
     data_dir = 'data/'
@@ -349,11 +348,42 @@ def test () :
 
     data_path   = google_drive + data_dir
     print (data_path)
+    out_dir = data_path
 
     model_name   = 'tiny.en'
     doc_download = False
     
-    am = WhisperAM (model_name, data_path, doc_download=doc_download)
+    am = WhisperAM (model_name, data_path, out_dir, doc_download=doc_download)
+    am.checkCuda ()
+
+    print ('Start :', time.strftime('%X %x %Z'))
+    am.run ()
+    print ('End  :', time.strftime('%X %x %Z'))
+###
+
+
+def test () :
+    # model_name   = 'tiny.en'
+    # model_name   = 'large-v3-turbo'
+    # model_name   = 'turbo'
+    # model_name   = 'distil-large-v2'
+    # model_name   = 'distil-large-v3'
+    # model_name   = 'distil-medium.en'
+    # model_name   = 'medium.en'
+    # model_name   = 'Systran/faster-whisper-large-v3' ### not good : no punctuation (KuanYin)
+    # model_name   = 'Systran/faster-distil-whisper-large-v3' ### not good : repetition
+    # model_name   = 'Systran/faster-whisper-medium.en' ### not good : no punctuation
+    # model_name   = 'deepdml/faster-whisper-large-v3-turbo-ct2' ### not good
+    model_name   = 'guillaumekln/faster-whisper-large-v2' ### 50ms로는 아직은 오류 없음
+
+    print (model_name)
+
+    data_dir = 'data/'
+    # out_dir = data_dir + model_name.split ('/')[-1]
+    # data_path    = 'sample.mp3'
+    doc_download = False
+
+    am = WhisperAM (model_name, data_dir, doc_download=doc_download, FASTER=FASTER)
     am.checkCuda ()
 
     print ('Start :', time.strftime('%X %x %Z'))
@@ -363,4 +393,5 @@ def test () :
 
 
 if __name__ == '__main__' :
+    # test_google_drive ()
     test ()
