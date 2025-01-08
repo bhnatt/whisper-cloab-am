@@ -120,7 +120,7 @@ class WhisperAM :
         # options = dict (language='English', beam_size=self.beam_size, best_of=5)
         #options = dict (language='English', beam_size=self.beam_size, best_of=5, vad_filter=True)
         #options = dict (language='en', beam_size=self.beam_size, best_of=5, vad_filter=True)
-        options = dict (language='en', beam_size=self.beam_size, best_of=5, vad_filter=True, vad_parameters=dict(min_silence_duration_ms=20))
+        options = dict (language='en', beam_size=self.beam_size, best_of=5, vad_filter=True, vad_parameters=dict(min_silence_duration_ms=650))
         transcribe_options = dict (task="transcribe", **options)
         
         if self.initial_prompt != "" :
